@@ -46,6 +46,7 @@ from supertokens_flask.cookie_and_header import (
     save_frontend_info_from_request,
     get_id_refresh_token_from_cookie,
     attach_id_refresh_token_to_cookie_and_header,
+    attach_front_token_in_headers,
     get_cors_allowed_headers as get_cors_allowed_headers_from_cookie_and_headers
 )
 from supertokens_flask.default_callbacks import (
@@ -69,6 +70,12 @@ def create_new_session(response, user_id, jwt_payload=None, session_data=None):
         access_token['cookiePath'],
         access_token['cookieSecure'],
         access_token['sameSite']
+    )
+    attach_front_token_in_headers(
+        response,
+        user_id,
+        access_token['expiry'],
+        jwt_payload
     )
     attach_refresh_token_to_cookie(
         response,
@@ -125,6 +132,12 @@ def get_session(response, enable_csrf_protection):
                     access_token_info['cookieSecure'],
                     access_token_info['sameSite']
                 )
+                attach_front_token_in_headers(
+                    response,
+                    new_session['session']['userId'],
+                    access_token['expiry'],
+                    new_session['session']['userDataInJWT']
+                )
             else:
                 session.new_access_token_info = new_session['accessToken']
         return session
@@ -157,6 +170,12 @@ def refresh_session(response):
                 access_token['cookiePath'],
                 access_token['cookieSecure'],
                 access_token['sameSite']
+            )
+            attach_front_token_in_headers(
+                response,
+                new_session['session']['userId'],
+                access_token['expiry'],
+                new_session['session']['userDataInJWT']
             )
             attach_refresh_token_to_cookie(
                 response,
