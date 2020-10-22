@@ -27,14 +27,15 @@ from supertokens_flask.constants import (
     SUPERTOKENS_SDK_NAME_HEADER_GET_KEY,
     SUPERTOKENS_SDK_NAME_HEADER_SET_KEY,
     SUPERTOKENS_SDK_VERSION_HEADER_GET_KEY,
-    SUPERTOKENS_SDK_VERSION_HEADER_SET_KEY
+    SUPERTOKENS_SDK_VERSION_HEADER_SET_KEY,
+    FRONT_TOKEN_HEADER_KEY
 )
 from supertokens_flask.device_info import DeviceInfo
 from supertokens_flask.exceptions import raise_general_exception
 from supertokens_flask.handshake_info import HandshakeInfo
 from urllib.parse import quote, unquote
 from os import environ
-
+import json, base64
 
 class CookieConfig:
     __instance = None
@@ -171,6 +172,25 @@ def attach_id_refresh_token_to_cookie_and_header(
         ID_REFRESH_TOKEN_HEADER_SET_KEY)
     set_cookie(response, ID_REFRESH_TOKEN_COOKIE_KEY, token, expires_at, path,
                domain, secure, True, same_site)
+
+
+def attach_front_token_in_headers(
+    response, user_id, at_expiry, jwt_payload): 
+    token_info = {
+        "uid": user_id,
+        "ate": at_expiry,
+        "up": jwt_payload
+    }
+    set_header(
+        response,
+        FRONT_TOKEN_HEADER_KEY,
+        base64.b64encode(json.dumps(token_info).encode("utf-8")),
+    )
+    set_header(
+        response,
+        ACCESS_CONTROL_EXPOSE_HEADERS,
+        FRONT_TOKEN_HEADER_KEY
+    )
 
 
 def get_access_token_from_cookie(request):
